@@ -24,7 +24,7 @@ public class BusStop implements IBusStops{
 		this.personsWaitBusOnBusStop = new ArrayList<>();
 	}	
 
-	public synchronized boolean isCheckBus() {	
+	public boolean isCheckBus() {	
 		return checkBus;
 	}
 
@@ -77,7 +77,7 @@ public class BusStop implements IBusStops{
 						System.err.println("Зашел человек № " + person.getIdPerson() + " в автобус номер " + this.getCurrentBus().getIdBus() + " с останови " + this.getIdBusStop() + " на останове - " + this.getPersonsWaitBusOnBusStop().size());
 						if (this.getCurrentBus().getCurrentEmptyPlaces() == 0 | this.getPersonsWaitBusOnBusStop().size() == 0) {
 							System.err.println("Зашел и пнул, в автобусе свободных мест - " + this.getCurrentBus().getCurrentEmptyPlaces());
-							notifyAll();
+							this.notifyAll();
 						}
 					} else {
 		//				logPerson.info("A person # "+ person.getIdPerson() + " waited for the next bus because the bus # " + currentBus.getIdBus() + " ran the place");
@@ -123,9 +123,9 @@ public class BusStop implements IBusStops{
 	
 	@Override
 	public synchronized void busGoToBusStop(Bus bus) {
-		if (this.isCheckBus()) {
+	/*	if (this.getCurrentBus() != null) {			
 			System.err.println("Автобус" + bus.getIdBus() + ", остановка № " + this.getIdBusStop() + " ждет пока другой автобус уедет");
-			while (this.isCheckBus()) {
+			while (this.getCurrentBus() != null) {
 				try {
 					wait();
 				} catch (InterruptedException e) {
@@ -133,12 +133,12 @@ public class BusStop implements IBusStops{
 				}
 			}
 			System.err.println("Поехал Автобус" + bus.getIdBus());
-		}
+		}*/
 		if (this.setCurrentBus(bus)){
 			this.setCheckBus(true);
 			this.getCurrentBus().setIdCurrentBusStop(this.getIdBusStop());
 			System.err.println("Автобус" + bus.getIdBus() + ", остановка № " + this.getIdBusStop());
-		}		
+		}
 	}
 	
 	@Override
@@ -157,7 +157,7 @@ public class BusStop implements IBusStops{
 				System.err.println("Автобус" + this.getCurrentBus().getIdBus() + ", остановка № " + this.getIdBusStop() + " людей в пути " + this.getCurrentBus().getWay().checkPersonsWaitBus() + " жду пока зайдут, из автобуса хотят выйти тут -  " + this.getCurrentBus().getWay().checkPersonGoOutOnThisBusStop(this.getCurrentBus(), this) + " на остановке -" + this.getPersonsWaitBusOnBusStop().size());
 				this.notifyAll();
 				wait();
-				System.err.println("Автобус" + this.getCurrentBus().getIdBus() + " толкнут после запуска людей, на остановке осталось - " + this.getPersonsWaitBusOnBusStop().size());
+//				System.err.println("Автобус" + this.getCurrentBus().getIdBus() + " толкнут после запуска людей, на остановке осталось - " + this.getPersonsWaitBusOnBusStop().size());
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -168,7 +168,6 @@ public class BusStop implements IBusStops{
 	public synchronized void busGoOutBusStop() {
 		if (this.setCurrentBus(null)){
 			this.setCheckBus(false);
-			notifyAll();
 		}
 	}
 }

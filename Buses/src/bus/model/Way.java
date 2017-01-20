@@ -11,35 +11,74 @@ import bus.model.BusStop;
 public class Way implements IWays{
 	private int countBusStops;
 	private ArrayList<BusStop> busStops;
+	private ArrayList<Integer> busyBusStops;
 	private HashMap<Person, Integer> personsInWay;
 	
 	public Way(ArrayList<BusStop> busStops) {
 		super();
 		this.busStops = busStops;
+		this.busyBusStops = new ArrayList<>();
 		this.personsInWay = new HashMap<>();
 	}
 	
 	public synchronized BusStop nextBusStop(Bus bus) {
 		if (bus.isForward()) {
-			this.countBusStops = bus.getCountBusStop();
-			this.countBusStops++;
-			bus.setCountBusStop(this.countBusStops);
-			if (this.countBusStops == this.getBusStops().size()) {
+			countBusStops = bus.getCountBusStop();
+			countBusStops++;
+			bus.setCountBusStop(countBusStops);
+			if (countBusStops == getBusStops().size()) {
 				bus.setForward(false);
 			}
-			return this.getBusStops().get(this.countBusStops - 1);
+			
+			
+		///////////////////////////////////////////////////////////////////////////	
+			while (busyBusStops.contains((Integer)(countBusStops - 1))) {
+				try {
+					System.err.println("Автобус номер " + bus.getIdBus() + " ждет чтоб другой свалил");
+					wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			busyBusStops.add((Integer)(countBusStops - 1));
+			
+			
+			/////////////////////////////////////////////////////
+			
+			return getBusStops().get(countBusStops - 1);
 		} else {
-			this.countBusStops = bus.getCountBusStop();
-			this.countBusStops--;
-			bus.setCountBusStop(this.countBusStops);
-			if (this.countBusStops - 1 == 0) {
+			countBusStops = bus.getCountBusStop();
+			countBusStops--;
+			bus.setCountBusStop(countBusStops);
+			if (countBusStops - 1 == 0) {
 				bus.setForward(true);
 			}
-			return this.getBusStops().get(this.countBusStops - 1);
+			/////////////////////////////////////////////////////////////////////
+			while (busyBusStops.contains((Integer)(countBusStops - 1))) {
+				try {
+					System.err.println("Автобус номер " + bus.getIdBus() + " ждет чтоб другой свалил");
+					wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			busyBusStops.add((Integer)(countBusStops - 1));
+			//////////////////////////////////////////////////////////////////
+			return getBusStops().get(countBusStops - 1);
 		}
-    }
+    }		
 	
-	public ArrayList<BusStop> getBusStops() {
+/*	public synchronized ArrayList<Integer> getBusyBusStops() {
+		return busyBusStops;
+	}
+	*/
+
+	public synchronized void notifyBus(Bus bus) {
+		busyBusStops.remove((Integer)bus.getIdCurrentBusStop());
+		this.notifyAll();
+	}
+
+	public synchronized ArrayList<BusStop> getBusStops() {
 		return busStops;
 	}
 	

@@ -11,6 +11,7 @@ public class Bus implements IBuses{
 	private final int idBus;
 	private int currentCapacity;
 	private int idCurrentBusStop;
+	private BusStop currentBusStop;
 	private int countBusStop;
 	private boolean forward;
 	private final int maxCapacity;
@@ -19,6 +20,7 @@ public class Bus implements IBuses{
 	public Bus(int idBus, int maxCapacity, Way way) {
 		super();
 		this.idBus = idBus;
+		this.currentBusStop = null;
 		this.countBusStop = 0;
 		this.currentCapacity = 0;
 		this.forward = true;
@@ -26,6 +28,10 @@ public class Bus implements IBuses{
 		this.way = way;
 	}
 	
+	public synchronized BusStop getCurrentBusStop() {
+		return currentBusStop;
+	}
+
 	public int getIdBus() {
 		return idBus;
 	}
@@ -93,9 +99,12 @@ public class Bus implements IBuses{
 	@Override
 	public void run() {
 		while (true) {
-			this.getWay().nextBusStop(this).busGoToBusStop(this);
-			this.getWay().getBusStops().get(this.getIdCurrentBusStop()).busWaitPersonOnBusStop(this);			
-			this.getWay().getBusStops().get(this.getIdCurrentBusStop()).busGoOutBusStop();
+			this.currentBusStop = getWay().nextBusStop(this);
+		//	getWay().waitBus(this, currentBusStop.getIdBusStop());
+			getCurrentBusStop().busGoToBusStop(this);
+			getCurrentBusStop().busWaitPersonOnBusStop(this);
+			getCurrentBusStop().busGoOutBusStop();
+			getWay().notifyBus(this);
 		//	logWay.info("Number persons in motion while bus on way - " + way.checkPersonsWaitBus());
 			if (this.getIdCurrentBusStop() == 0 && this.getWay().checkPersonsWaitBus() == 0) {
 				System.err.println("---------------------------------------Автобус номер " + this.idBus + " Законил");

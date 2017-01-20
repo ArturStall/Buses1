@@ -40,13 +40,17 @@ public class Person implements IPersons{
 	
 	public void setInBus(boolean inBus) {
 		this.inBus = inBus;
-	}
+	}	
 	
+	public Way getWay() {
+		return way;
+	}
+
 	@Override
 	public void run() {
-		way.getBusStops().get(idCurrentBusStop).personGoToBusStop(this);
-		way.getBusStops().get(idCurrentBusStop).personGoToBus(this);
-		way.getBusStops().get(idTargetBusStop).personGoOutBus(this);
+		getWay().getBusStops().get(idCurrentBusStop).personGoToBusStop(this);
+		getWay().getBusStops().get(idCurrentBusStop).personGoToBus(this);
+		getWay().getBusStops().get(idTargetBusStop).personGoOutBus(this);
 	}
 	
 	@Override
